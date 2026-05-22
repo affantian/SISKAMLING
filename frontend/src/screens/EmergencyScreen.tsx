@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Modal,
   Platform,
+  Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -65,15 +66,35 @@ export default function EmergencyScreen() {
     setConfirmAlert({ type, title: labels[lang][type] });
   };
 
+  const getCurrentLocation = async (): Promise<{ lat: number; lng: number }> => {
+    // Try web geolocation first
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.geolocation) {
+      try {
+        const pos = await new Promise<any>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            timeout: 8000,
+            enableHighAccuracy: true,
+          });
+        });
+        return { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      } catch (e) {
+        console.log('Web geolocation failed, using fallback');
+      }
+    }
+    // Fallback to Bandung center
+    return { lat: -6.9175, lng: 107.6191 };
+  };
+
   const confirmSendAlert = async () => {
     if (!confirmAlert) return;
     const type = confirmAlert.type;
     setConfirmAlert(null);
     setLoading(true);
     try {
+      const liveLocation = await getCurrentLocation();
       await api.post('/api/emergency/alert', {
         type,
-        location: user?.location || { lat: 0, lng: 0 },
+        location: liveLocation,
         alamat: user?.alamat,
         rw: user?.rw,
         rt: user?.rt,
@@ -83,8 +104,8 @@ export default function EmergencyScreen() {
         title: lang === 'id' ? 'Berhasil' : 'Success',
         message:
           lang === 'id'
-            ? 'Notifikasi darurat telah dikirim!'
-            : 'Emergency notification sent!',
+            ? `Notifikasi darurat dikirim!\nLokasi: ${liveLocation.lat.toFixed(4)}, ${liveLocation.lng.toFixed(4)}`
+            : `Emergency notification sent!\nLocation: ${liveLocation.lat.toFixed(4)}, ${liveLocation.lng.toFixed(4)}`,
       });
       loadHistory();
     } catch (error) {
@@ -419,6 +440,28 @@ export default function EmergencyScreen() {
                 {user?.rw} / {user?.rt}
               </Text>
             </View>
+            <TouchableOpacity
+              style={[styles.logoutButton, { backgroundColor: '#E8F5E9', marginTop: 0 }]}
+              onPress={async () => {
+                setShowMenu(false);
+                const msg = lang === 'id'
+                  ? 'Ayo gabung Siskamling — sistem keamanan warga jaga warga! https://siskamling.app'
+                  : 'Join Siskamling — community safety system! https://siskamling.app';
+                try {
+                  if (Platform.OS === 'web' && typeof navigator !== 'undefined' && (navigator as any).share) {
+                    await (navigator as any).share({ text: msg });
+                  } else {
+                    await Share.share({ message: msg });
+                  }
+                } catch (e) {}
+              }}
+              testID="menu-invite-button"
+            >
+              <Ionicons name="person-add" size={20} color="#3B6D11" />
+              <Text style={[styles.logoutText, { color: '#3B6D11' }]}>
+                {lang === 'id' ? 'Undang Teman' : 'Invite Friend'}
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               style={styles.logoutButton}
               onPress={() => {

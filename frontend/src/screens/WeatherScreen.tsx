@@ -132,16 +132,11 @@ export default function WeatherScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>
-              {lang === 'id' ? 'Cuaca & Kualitas Udara' : 'Weather & Air Quality'}
-            </Text>
-            <View style={styles.locationRow}>
-              <Ionicons name="location" size={12} color="#666" />
-              <Text style={styles.locationText}>{weather.location}</Text>
-            </View>
+        {/* Compact Top Header */}
+        <View style={styles.topHeader}>
+          <View style={styles.locationRow}>
+            <Ionicons name="location" size={14} color="#3B6D11" />
+            <Text style={styles.topLocationText}>{weather.location}</Text>
           </View>
           <View style={styles.headerActions}>
             <TouchableOpacity onPress={toggleLanguage} style={styles.langButton} testID="language-toggle-button">
@@ -150,9 +145,16 @@ export default function WeatherScreen() {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
-              <Ionicons name="refresh" size={18} color="#3B6D11" />
+              <Ionicons name="refresh" size={16} color="#3B6D11" />
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* CUACA HARI INI - Section Title at top */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionMainTitle}>
+            {lang === 'id' ? 'Cuaca Hari Ini' : "Today's Weather"}
+          </Text>
         </View>
 
         {/* Main Weather Card */}
@@ -178,6 +180,13 @@ export default function WeatherScreen() {
               {lang === 'id' ? 'Diperbarui baru saja' : 'Updated just now'}
             </Text>
           </View>
+        </View>
+
+        {/* Kondisi Detail */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionMainTitle}>
+            {lang === 'id' ? 'Kondisi Saat Ini' : 'Current Conditions'}
+          </Text>
         </View>
 
         {/* Weather Stats */}
@@ -472,6 +481,31 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  topHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  topLocationText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#3B6D11',
+  },
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 4,
+  },
+  sectionMainTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333',
   },
   header: {
     flexDirection: 'row',

@@ -21,8 +21,10 @@ export default function RegisterScreen() {
     password: '',
     nama: '',
     alamat: '',
+    kelurahan: 'Sukamaju',
     rw: '',
     rt: '',
+    role: 'warga',
     language: 'id',
   });
   const [loading, setLoading] = useState(false);
@@ -138,6 +140,35 @@ export default function RegisterScreen() {
             </View>
           </View>
 
+          {/* Role Selection */}
+          <Text style={styles.roleLabel}>Peran Anda</Text>
+          <View style={styles.roleRow}>
+            {[
+              { v: 'warga', label: 'Warga' },
+              { v: 'koordinator_rw', label: 'Koord. RW' },
+              { v: 'koordinator_kelurahan', label: 'Koord. Kel.' },
+            ].map((r) => (
+              <TouchableOpacity
+                key={r.v}
+                style={[
+                  styles.roleChip,
+                  formData.role === r.v && styles.roleChipActive,
+                ]}
+                onPress={() => updateField('role', r.v)}
+                testID={`role-${r.v}`}
+              >
+                <Text
+                  style={[
+                    styles.roleChipText,
+                    formData.role === r.v && styles.roleChipTextActive,
+                  ]}
+                >
+                  {r.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleRegister}
@@ -222,6 +253,39 @@ const styles = StyleSheet.create({
   },
   halfInput: {
     width: '48%',
+  },
+  roleLabel: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 8,
+    marginBottom: 8,
+    fontWeight: '600',
+  },
+  roleRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  roleChip: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  roleChipActive: {
+    backgroundColor: '#3B6D11',
+    borderColor: '#3B6D11',
+  },
+  roleChipText: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+  },
+  roleChipTextActive: {
+    color: '#fff',
   },
   button: {
     backgroundColor: '#3B6D11',

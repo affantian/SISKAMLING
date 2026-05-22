@@ -105,8 +105,9 @@ class TestEmergency:
         r = api_client.post(f"{base_url}/api/emergency/alert", headers=auth_headers, json=payload)
         assert r.status_code == 200, r.text
         body = r.json()
-        # mode pergi -> 3 entries
-        assert len(body["routing_info"]) == 3
+        # New contract: always 4 routing entries (warga + koord_rw + koord_kel + GPS LIVE)
+        assert len(body["routing_info"]) == 4
+        assert any("GPS LIVE" in s for s in body["routing_info"])
 
     def test_get_active_alerts(self, api_client, base_url, auth_headers):
         r = api_client.get(f"{base_url}/api/emergency/active", headers=auth_headers)
