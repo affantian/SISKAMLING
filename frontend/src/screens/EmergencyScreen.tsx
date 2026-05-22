@@ -47,8 +47,8 @@ export default function EmergencyScreen() {
     }
   };
 
-  const sendEmergencyAlert = async (type: string) => {
-    const labels = {
+  const sendEmergencyAlert = (type: string) => {
+    const labels: any = {
       id: {
         sos: 'SOS - Darurat Umum',
         medis: 'Darurat Medis',
@@ -62,53 +62,42 @@ export default function EmergencyScreen() {
         kebakaran: 'Fire Emergency',
       },
     };
+    setConfirmAlert({ type, title: labels[lang][type] });
+  };
 
-    Alert.alert(
-      lang === 'id' ? 'Konfirmasi' : 'Confirm',
-      lang === 'id'
-        ? `Kirim notifikasi ${labels[lang][type]}?`
-        : `Send ${labels[lang][type]} notification?`,
-      [
-        {
-          text: lang === 'id' ? 'Batal' : 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: lang === 'id' ? 'Kirim' : 'Send',
-          style: 'destructive',
-          onPress: async () => {
-            setLoading(true);
-            try {
-              const response = await api.post('/api/emergency/alert', {
-                type,
-                location: user?.location || { lat: 0, lng: 0 },
-                alamat: user?.alamat,
-                rw: user?.rw,
-                rt: user?.rt,
-                mode: user?.mode,
-              });
-
-              Alert.alert(
-                lang === 'id' ? 'Berhasil' : 'Success',
-                lang === 'id'
-                  ? 'Notifikasi darurat telah dikirim!'
-                  : 'Emergency notification sent!',
-              );
-              loadHistory();
-            } catch (error) {
-              Alert.alert(
-                lang === 'id' ? 'Gagal' : 'Failed',
-                lang === 'id'
-                  ? 'Gagal mengirim notifikasi'
-                  : 'Failed to send notification',
-              );
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ],
-    );
+  const confirmSendAlert = async () => {
+    if (!confirmAlert) return;
+    const type = confirmAlert.type;
+    setConfirmAlert(null);
+    setLoading(true);
+    try {
+      await api.post('/api/emergency/alert', {
+        type,
+        location: user?.location || { lat: 0, lng: 0 },
+        alamat: user?.alamat,
+        rw: user?.rw,
+        rt: user?.rt,
+        mode: user?.mode,
+      });
+      setResultAlert({
+        title: lang === 'id' ? 'Berhasil' : 'Success',
+        message:
+          lang === 'id'
+            ? 'Notifikasi darurat telah dikirim!'
+            : 'Emergency notification sent!',
+      });
+      loadHistory();
+    } catch (error) {
+      setResultAlert({
+        title: lang === 'id' ? 'Gagal' : 'Failed',
+        message:
+          lang === 'id'
+            ? 'Gagal mengirim notifikasi'
+            : 'Failed to send notification',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getModeInfo = () => {
@@ -146,6 +135,7 @@ export default function EmergencyScreen() {
           <TouchableOpacity
             style={styles.userButton}
             onPress={() => setShowMenu(true)}
+            testID="user-pill"
           >
             <View style={[styles.statusDot, { backgroundColor: modeInfo.color }]} />
             <Text style={styles.userName} numberOfLines={1}>
@@ -174,6 +164,7 @@ export default function EmergencyScreen() {
           <TouchableOpacity
             style={[styles.modeToggle, { backgroundColor: modeInfo.color }]}
             onPress={toggleMode}
+            testID="mode-toggle-button"
           >
             <Text style={styles.modeToggleText}>{modeInfo.buttonText}</Text>
           </TouchableOpacity>
@@ -199,6 +190,7 @@ export default function EmergencyScreen() {
             style={styles.sosButton}
             onPress={() => sendEmergencyAlert('sos')}
             disabled={loading}
+            testID="sos-button"
           >
             <View style={styles.sosInner}>
               <Text style={styles.sosLabel}>SOS</Text>
@@ -218,6 +210,7 @@ export default function EmergencyScreen() {
             style={[styles.emergencyButton, styles.medisButton]}
             onPress={() => sendEmergencyAlert('medis')}
             disabled={loading}
+            testID="emergency-medis-button"
           >
             <Ionicons name="medical" size={32} color="#185FA5" />
             <Text style={styles.emergencyName}>
@@ -232,6 +225,7 @@ export default function EmergencyScreen() {
             style={[styles.emergencyButton, styles.kriminalButton]}
             onPress={() => sendEmergencyAlert('kriminal')}
             disabled={loading}
+            testID="emergency-kriminal-button"
           >
             <Ionicons name="warning" size={32} color="#BA7517" />
             <Text style={styles.emergencyName}>
@@ -246,6 +240,7 @@ export default function EmergencyScreen() {
             style={[styles.emergencyButton, styles.kebakaranButton]}
             onPress={() => sendEmergencyAlert('kebakaran')}
             disabled={loading}
+            testID="emergency-kebakaran-button"
           >
             <Ionicons name="flame" size={32} color="#E24B4A" />
             <Text style={styles.emergencyName}>
@@ -324,6 +319,75 @@ export default function EmergencyScreen() {
         )}
       </ScrollView>
 
+      {/* Confirmation Modal */}
+      <Modal
+        visible={confirmAlert !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConfirmAlert(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.confirmModal}>
+            <Ionicons name="alert-circle" size={48} color="#E24B4A" />
+            <Text style={styles.confirmTitle}>
+              {lang === 'id' ? 'Konfirmasi' : 'Confirm'}
+            </Text>
+            <Text style={styles.confirmMessage}>
+              {lang === 'id'
+                ? `Kirim notifikasi ${confirmAlert?.title}?`
+                : `Send ${confirmAlert?.title} notification?`}
+            </Text>
+            <View style={styles.confirmActions}>
+              <TouchableOpacity
+                style={[styles.confirmBtn, styles.cancelBtn]}
+                onPress={() => setConfirmAlert(null)}
+                testID="confirm-cancel-button"
+              >
+                <Text style={styles.cancelBtnText}>
+                  {lang === 'id' ? 'Batal' : 'Cancel'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.confirmBtn, styles.sendBtn]}
+                onPress={confirmSendAlert}
+                testID="confirm-send-button"
+              >
+                <Text style={styles.sendBtnText}>
+                  {lang === 'id' ? 'Kirim' : 'Send'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Result Modal */}
+      <Modal
+        visible={resultAlert !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setResultAlert(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.confirmModal}>
+            <Ionicons
+              name={resultAlert?.title.includes('Berhasil') || resultAlert?.title.includes('Success') ? 'checkmark-circle' : 'close-circle'}
+              size={48}
+              color={resultAlert?.title.includes('Berhasil') || resultAlert?.title.includes('Success') ? '#3B6D11' : '#E24B4A'}
+            />
+            <Text style={styles.confirmTitle}>{resultAlert?.title}</Text>
+            <Text style={styles.confirmMessage}>{resultAlert?.message}</Text>
+            <TouchableOpacity
+              style={[styles.confirmBtn, styles.sendBtn, { width: '100%' }]}
+              onPress={() => setResultAlert(null)}
+              testID="result-ok-button"
+            >
+              <Text style={styles.sendBtnText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* Menu Modal */}
       <Modal
         visible={showMenu}
@@ -361,6 +425,7 @@ export default function EmergencyScreen() {
                 setShowMenu(false);
                 logout();
               }}
+              testID="logout-button"
             >
               <Ionicons name="log-out-outline" size={20} color="#E24B4A" />
               <Text style={styles.logoutText}>
@@ -702,5 +767,53 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.8)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  confirmModal: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 360,
+    alignItems: 'center',
+  },
+  confirmTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  confirmMessage: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  confirmActions: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  confirmBtn: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  cancelBtn: {
+    backgroundColor: '#F5F5F5',
+  },
+  cancelBtnText: {
+    color: '#666',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  sendBtn: {
+    backgroundColor: '#E24B4A',
+  },
+  sendBtnText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 15,
   },
 });

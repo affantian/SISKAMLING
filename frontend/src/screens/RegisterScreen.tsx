@@ -142,6 +142,7 @@ export default function RegisterScreen() {
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleRegister}
             disabled={loading}
+            testID="register-submit-button"
           >
             {loading ? (
               <ActivityIndicator color="#fff" />

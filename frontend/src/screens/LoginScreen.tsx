@@ -66,6 +66,7 @@ export default function LoginScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              testID="login-email-input"
             />
           </View>
 
@@ -78,6 +79,7 @@ export default function LoginScreen() {
               onChangeText={setPassword}
               secureTextEntry
               autoComplete="password"
+              testID="login-password-input"
             />
           </View>
 
@@ -85,6 +87,7 @@ export default function LoginScreen() {
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={loading}
+            testID="login-submit-button"
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
@@ -96,6 +99,7 @@ export default function LoginScreen() {
           <TouchableOpacity
             style={styles.linkButton}
             onPress={() => navigation.navigate('Register' as never)}
+            testID="login-go-register-button"
           >
             <Text style={styles.linkText}>
               Belum punya akun? <Text style={styles.linkTextBold}>Daftar</Text>

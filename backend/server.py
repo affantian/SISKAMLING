@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 import bcrypt
 import jwt
 from bson import ObjectId
+from bson.errors import InvalidId
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -123,6 +124,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    except InvalidId:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 # ==================== AUTH ROUTES ====================

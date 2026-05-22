@@ -144,7 +144,7 @@ export default function WeatherScreen() {
             </View>
           </View>
           <View style={styles.headerActions}>
-            <TouchableOpacity onPress={toggleLanguage} style={styles.langButton}>
+            <TouchableOpacity onPress={toggleLanguage} style={styles.langButton} testID="language-toggle-button">
               <Text style={styles.langButtonText}>
                 {lang === 'id' ? 'EN' : 'ID'}
               </Text>
